@@ -3,26 +3,19 @@ int pot1 = A0;
 int pot2 = A1;
 int switchLaser = 6;
 
-
 //Global variables
-int potValue1 = 0;
-int potValue2 = 0;
-unsigned long millisTime = 0;              //used to track how often to communicate data
-unsigned long previousTime = 0;
+float potValue1 = 0;
+float potValue2 = 0;
+unsigned long millisTime = 0;              //time every loop
+unsigned long previousBlinkTime = 0;
 
-
-float pulseLength = 50; // in percent
-float pulseFrequency = 5;
-float pulseBPM = 120;
+//Global states
+int laserPWMState = 255; 
 
 
 void setup() {
   Serial.begin(9600);
-
   pinMode(6, OUTPUT);
-
-
-
 }
 
 void loop() {
@@ -30,28 +23,26 @@ void loop() {
   potValue1 = analogRead(pot1);
   potValue2 = analogRead(pot2);
 
-  Serial.print(potValue1);
-  Serial.println(potValue2);
-
   millisTime = millis();
 
-  digitalWrite(switchLaser, HIGH);
-
-  Serial.print(pulseFreq);
-  Serial.print(pulseLength);
-  //pulseAtFrequency(pulseFreq, pulseLength);
-
-  flaot interval = 1000 / pulseFreq;
-  Serial.println (interval);
-  if (millisTime - previousTime >= interval) {
-    Serial.println("TRUE");
-  }
-
+  float interval = potValue1;
+  float setPWMvalue = map(potValue2, 0, 1023, 0, 255);
+  blinkEvery(interval, setPWMvalue);
+  Serial.println(interval);
+}
 //Functions
-//void pulseAtFrequency(pulseFreq, pulseLength){
-    
-    
-//  }
-//}
 
+void blinkEvery(float blinkInterval, float setPWMvalue){
+  blinkInterval = blinkInterval/2;
+  if (millisTime - previousBlinkTime >= blinkInterval) {
+    previousBlinkTime = millisTime; 
+    if (laserPWMState == 0) {
+      laserPWMState = setPWMvalue;
+    } else {
+      laserPWMState = 0;
+    }
+  } 
+  analogWrite(switchLaser, laserPWMState);
+}
+    
 
