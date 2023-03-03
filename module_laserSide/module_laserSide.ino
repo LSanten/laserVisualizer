@@ -34,14 +34,16 @@ void loop() {
 
 void blinkEvery(float blinkInterval, float setPWMvalue){
   blinkInterval = blinkInterval/2;
-  if (millisTime - previousBlinkTime >= blinkInterval) {
+  if (millisTime - previousBlinkTime >= blinkInterval and blinkInterval >4) {
     previousBlinkTime = millisTime; 
     if (laserPWMState == 0) {
       laserPWMState = setPWMvalue;
     } else {
       laserPWMState = 0;
     }
-  } 
+  } else if (blinkInterval < 4) {
+    laserPWMState = setPWMvalue;
+  }
   analogWrite(switchLaser, laserPWMState);
 }
     
