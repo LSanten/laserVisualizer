@@ -6,7 +6,7 @@
 good tutorial nrf24 https://forum.arduino.cc/t/simple-nrf24l01-2-4ghz-transceiver-demo/405123
 
 
-the video below and the related write up are great resources for getting wireless comunnication started 
+the video below and the related write up are great resources for getting with bytes started. however, now i have my own version in my arduino-templates repository
 
 https://www.youtube.com/watch?v=TDryziceAjI
 

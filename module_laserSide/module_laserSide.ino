@@ -1,50 +1,94 @@
-//Pin reading and writing
-int pot1 = A0;
-int pot2 = A1;
-int switchLaser = 6;
+// SimpleRx - the slave or the receiver
 
-//Global variables
-float potValue1 = 0;
-float potValue2 = 0;
-unsigned long millisTime = 0;              //time every loop
-unsigned long previousBlinkTime = 0;
+// SETUP FOR NRF24
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
 
-//Global states
-int laserPWMState = 255; 
+#define CE_PIN 9
+#define CSN_PIN 10
 
+//SETUP FOR OLED SCREEN 
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1); // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+
+
+const byte thisSlaveAddress[5] = { 'R', 'x', 'A', 'A', 'A' };
+
+RF24 radio(CE_PIN, CSN_PIN);
+
+
+byte dataReceived[8];  // this must match dataToSend in the TX
+bool newData = false;
+
+//===========
 
 void setup() {
+
   Serial.begin(9600);
-  pinMode(6, OUTPUT);
+
+  //start display
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+
+  //start NRF24
+  Serial.println("SimpleRx Starting");
+  radio.begin();
+  radio.setDataRate(RF24_250KBPS);
+  radio.openReadingPipe(1, thisSlaveAddress);
+  radio.startListening();
 }
+
+//=============
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  potValue1 = analogRead(pot1);
-  potValue2 = analogRead(pot2);
 
-  millisTime = millis();
-
-  float interval = potValue1;
-  float setPWMvalue = map(potValue2, 0, 1023, 0, 255);
-  blinkEvery(interval, setPWMvalue);
-  Serial.println(interval);
+  getData();
+  showData();
+  displayData();
 }
-//Functions
 
-void blinkEvery(float blinkInterval, float setPWMvalue){
-  blinkInterval = blinkInterval/2;
-  if (millisTime - previousBlinkTime >= blinkInterval and blinkInterval >4) {
-    previousBlinkTime = millisTime; 
-    if (laserPWMState == 0) {
-      laserPWMState = setPWMvalue;
-    } else {
-      laserPWMState = 0;
-    }
-  } else if (blinkInterval < 4) {
-    laserPWMState = setPWMvalue;
+//==============
+
+void getData() {
+  if (radio.available()) {
+    radio.read(&dataReceived, sizeof(dataReceived));
+    newData = true;
   }
-  analogWrite(switchLaser, laserPWMState);
 }
-    
 
+void showData() {
+  if (newData == true) {
+    Serial.println(dataReceived[0]);
+    Serial.println(dataReceived[1]);
+    Serial.println(dataReceived[2]);
+    newData = false;
+  }
+}
+
+void displayData() {
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+
+  display.setCursor(0, 0);
+
+  display.print(F("mode:"));
+  display.println(dataReceived[2]);
+  display.println(dataReceived[4]);
+  display.println(dataReceived[5]);
+  display.println(dataReceived[6]);
+
+  display.setCursor(90, 0);
+  display.println(dataReceived[1]);
+
+  display.display();
+
+}
