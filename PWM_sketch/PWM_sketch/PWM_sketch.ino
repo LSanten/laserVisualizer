@@ -1,12 +1,12 @@
 //Pin reading and writing
 int pot1 = A0;
 int pot2 = A1;
-int switchLaser = 6;
+int laserSwitch = 6;
 
 //Global variables
 float potValue1 = 0;
 float potValue2 = 0;
-unsigned long millisTime = 0;              //time every loop
+unsigned long millisLoopTime = 0;              //time every loop
 unsigned long previousBlinkTime = 0;
 
 //Global states
@@ -23,7 +23,7 @@ void loop() {
   potValue1 = analogRead(pot1);
   potValue2 = analogRead(pot2);
 
-  millisTime = millis();
+  millisLoopTime = millis();
 
   float interval = potValue1;
   float setPWMvalue = map(potValue2, 0, 1023, 0, 255);
@@ -34,8 +34,8 @@ void loop() {
 
 void blinkEvery(float blinkInterval, float setPWMvalue){
   blinkInterval = blinkInterval/2;
-  if (millisTime - previousBlinkTime >= blinkInterval and blinkInterval >4) {
-    previousBlinkTime = millisTime; 
+  if (millisLoopTime - previousBlinkTime >= blinkInterval and blinkInterval >4) {
+    previousBlinkTime = millisLoopTime; 
     if (laserPWMState == 0) {
       laserPWMState = setPWMvalue;
     } else {
@@ -44,7 +44,7 @@ void blinkEvery(float blinkInterval, float setPWMvalue){
   } else if (blinkInterval < 4) {
     laserPWMState = setPWMvalue;
   }
-  analogWrite(switchLaser, laserPWMState);
+  analogWrite(laserSwitch, laserPWMState);
 }
     
 
