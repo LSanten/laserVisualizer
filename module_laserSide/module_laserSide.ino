@@ -81,7 +81,7 @@ void setup() {
   data[0] = 1;
   data[1] = 200;
   data[2] = 1;
-  data[3] = 0;
+  data[3] = 255;
   data[4] = 0;
   data[5] = 0;
 
@@ -121,6 +121,12 @@ void loop() {
   }
   else if (settingNumber == 0){ //TURN off LASER
     analogWrite(laserSwitch, 0);
+  }
+  if (settingNumber == 3){ //TRADITIONAL PWM & FLICKER
+    float interval = map(data[4], 0, 255, 0, 500)*1000;
+    
+    int setPWMvalue = map(data[3], 0, 255, 0, 255);
+    blinkEvery(interval, setPWMvalue);
   }
 
 
@@ -240,6 +246,24 @@ boolean setvolume(int8_t v) {
 
 
 void blinkEvery(float blinkInterval, float setPWMvalue){
+  blinkInterval = blinkInterval/2;
+
+  Serial.print("blinkinterval");
+  Serial.println(blinkInterval);
+  if (millisLoopTime - previousBlinkTime >= blinkInterval and blinkInterval >4) {
+    previousBlinkTime = millisLoopTime; 
+    if (laserPWMState == 0) {
+      laserPWMState = setPWMvalue;
+    } else {
+      laserPWMState = 0;
+    }
+  } else if (blinkInterval < 4) {
+    laserPWMState = setPWMvalue;
+  }
+  analogWrite(laserSwitch, laserPWMState);
+}
+    
+void blinkEveryLong(float blinkInterval, float offInterval, float setPWMvalue){ //difference to "blinkEvery" function is that this one also turns off the speaker
   blinkInterval = blinkInterval/2;
 
   Serial.print("blinkinterval");

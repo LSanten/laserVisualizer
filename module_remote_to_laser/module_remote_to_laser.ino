@@ -29,6 +29,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1); // Declaration
 int Button1 = 2;
 int Button2 = 3;
 int Button3 = 4;
+int blueButtonLED = 6;
 int backwardButtonLastState = 0;
 int forwardButtonLastState = 0;
 int blueButtonLastState = 0;
@@ -83,6 +84,7 @@ void setup() {
     pinMode(Button1, INPUT);
     pinMode(Button2, INPUT);
     pinMode(Button3, INPUT);
+    pinMode(blueButtonLED, OUTPUT);
 
 
     settingNumber = 0;
@@ -92,7 +94,7 @@ void setup() {
 
 void loop() {
 
-
+    
 
     currentMillis = millis();
 
@@ -148,9 +150,11 @@ void send() {
     //Serial.print(dataToSend);
     if (rslt) {
         Serial.println("  Acknowledge received");
+        analogWrite(blueButtonLED, 50);
     }
     else {
         Serial.println("  Tx failed");
+        analogWrite(blueButtonLED, 0);
     }
 }
 
@@ -200,6 +204,27 @@ void displayData() {
     display.println("PWM");
     display.setCursor(60, 35);
     display.println("BPM");
+  }
+  else if (settingNumber == 3){
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+
+    display.setCursor(0, 0);
+
+    display.println(F("LONG"));
+    //display.println(data[2]);
+    display.println(data[3]);
+    display.println(data[4]);
+    display.println(data[5]);
+
+    display.setCursor(90, 0);
+    display.println(data[1]);
+
+    display.setCursor(60, 15);
+    display.println("PWM");
+    display.setCursor(60, 35);
+    display.println("Intv");
 
     display.display();
   }
